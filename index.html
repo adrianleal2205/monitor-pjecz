@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="PJECZ Leal" />
+  <title>Monitor Judicial PJECZ | Despacho Jurídico Leal & Asociados</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet" />
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Inter:wght@400;500;600;700&display=swap');
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: #f4f4f5;
+      color: #18181b;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .font-serif-legal {
+      font-family: 'Cinzel', Georgia, serif;
+    }
+    .gold-accent {
+      color: #b48a3e;
+    }
+    .bg-gold {
+      background-color: #b48a3e;
+    }
+    .bg-gold:hover {
+      background-color: #9c742e;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+  <!-- ENCABEZADO -->
+  <header class="bg-zinc-950 text-white border-b-2 border-[#b48a3e] sticky top-0 z-30 shadow-lg">
+    <div class="max-w-6xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+      <div class="flex items-center gap-3">
+        <!-- Logotipo SVG estilizado fiel al despacho -->
+        <div class="bg-white rounded-lg px-3 py-1.5 flex items-center gap-2.5 shadow-sm">
+          <svg class="w-7 h-7 text-zinc-900" viewBox="0 0 64 64" fill="currentColor">
+            <rect x="12" y="10" width="40" height="4" />
+            <rect x="16" y="16" width="32" height="3" />
+            <rect x="20" y="21" width="3" height="24" />
+            <rect x="26" y="21" width="3" height="24" />
+            <rect x="35" y="21" width="3" height="24" />
+            <rect x="41" y="21" width="3" height="24" />
+            <rect x="16" y="47" width="32" height="3" />
+            <rect x="12" y="52" width="40" height="4" />
+          </svg>
+          <div class="leading-tight">
+            <div class="font-serif-legal text-[11px] font-bold tracking-widest text-zinc-900">DESPACHO JURÍDICO</div>
+            <div class="text-[9px] font-semibold tracking-[0.2em] text-zinc-600">LEAL &amp; ASOCIADOS</div>
+          </div>
+        </div>
+        <div class="hidden sm:block">
+          <h1 class="text-sm font-semibold tracking-wide text-zinc-100">Monitor Listas de Acuerdos</h1>
+          <p class="text-xs text-zinc-400">Poder Judicial del Estado de Coahuila (PJECZ)</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <button onclick="abrirModalWhatsApp()" class="flex items-center gap-2 bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 text-xs px-3 py-2 rounded-lg transition">
+          <i class="fa-brands fa-whatsapp text-emerald-400 text-base"></i>
+          <span id="header-wa-display" class="font-medium text-zinc-200">+52 871 185 7231</span>
+        </button>
+
+        <button onclick="abrirModalExpediente()" class="flex items-center gap-2 bg-gold text-white font-semibold text-xs px-3.5 py-2 rounded-lg shadow transition">
+          <i class="fa-solid fa-plus"></i>
+          <span>Nuevo Expediente</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- CONTENIDO PRINCIPAL -->
+  <main class="max-w-6xl w-full mx-auto px-4 py-6 flex-1 space-y-6">
+
+    <!-- TARJETAS DE RESUMEN -->
+    <section class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      <div class="bg-white p-4 rounded-xl border border-zinc-200 shadow-sm">
+        <div class="text-xs text-zinc-500 font-medium">Total Vigilados</div>
+        <div id="stat-total" class="text-2xl font-bold text-zinc-900 mt-1">0</div>
+      </div>
+      <div class="bg-white p-4 rounded-xl border border-zinc-200 shadow-sm">
+        <div class="text-xs text-zinc-500 font-medium">Acuerdos Nuevos</div>
+        <div id="stat-nuevos" class="text-2xl font-bold text-emerald-600 mt-1">0</div>
+      </div>
+      <div class="bg-white p-4 rounded-xl border border-zinc-200 shadow-sm">
+        <div class="text-xs text-zinc-500 font-medium">Términos Próximos</div>
+        <div id="stat-terminos" class="text-2xl font-bold text-amber-600 mt-1">0</div>
+      </div>
+      <div class="bg-white p-4 rounded-xl border border-zinc-200 shadow-sm">
+        <div class="text-xs text-zinc-500 font-medium">Alertas WhatsApp</div>
+        <div id="stat-wa-status" class="text-sm font-bold text-emerald-600 mt-2 flex items-center gap-1.5">
+          <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Activas
+        </div>
+      </div>
+    </section>
+
+    <!-- FILTROS Y BÚSQUEDA -->
+    <section class="bg-white p-4 rounded-xl border border-zinc-200 shadow-sm flex flex-col sm:flex-row gap-3">
+      <div class="relative flex-1">
+        <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3 text-zinc-400 text-sm"></i>
+        <input id="filtro-busqueda" oninput="renderizarExpedientes()" type="text" placeholder="Buscar por expediente, cliente o asunto..." class="w-full pl-9 pr-3 py-2 text-sm border border-zinc-300 rounded-lg focus:outline-none focus:border-zinc-900" />
+      </div>
+      <select id="filtro-distrito" onchange="renderizarExpedientes()" class="px-3 py-2 text-sm border border-zinc-300 rounded-lg bg-white focus:outline-none focus:border-zinc-900">
+        <option value="">Todos los Distritos</option>
+        <option value="Torreón">Distrito Torreón</option>
+        <option value="Saltillo">Distrito Saltillo</option>
+        <option value="Monclova">Distrito Monclova</option>
+        <option value="San Pedro">Distrito San Pedro</option>
+        <option value="Sabinas">Distrito Sabinas</option>
+        <option value="Río Grande">Distrito Río Grande</option>
+        <option value="Acuña">Distrito Acuña</option>
+        <option value="Parras">Distrito Parras</option>
+      </select>
+      <a href="https://www.pjecz.gob.mx/consultas/listas-de-acuerdos/#gsc.tab=0" target="_blank" class="flex items-center justify-center gap-2 px-4 py-2 text-xs font-semibold bg-zinc-900 text-white rounded-lg hover:bg-zinc-800 transition">
+        <i class="fa-solid fa-arrow-up-right-from-square"></i> Portal PJECZ
+      </a>
+    </section>
+
+    <!-- LISTA DE EXPEDIENTES -->
+    <section id="lista-expedientes" class="grid grid-cols-1 md:grid-cols-2 gap-4"></section>
+
+  </main>
+
+  <!-- MODAL AGREGAR / EDITAR EXPEDIENTE -->
+  <div id="modal-expediente" class="fixed inset-0 bg-black/60 backdrop-blur-xs hidden items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-zinc-200 max-h-[90vh] overflow-y-auto">
+      <div class="flex justify-between items-center border-b border-zinc-100 pb-3 mb-4">
+        <h2 id="modal-exp-titulo" class="text-lg font-bold text-zinc-900">Registrar Expediente PJECZ</h2>
+        <button onclick="cerrarModalExpediente()" class="text-zinc-400 hover:text-zinc-700 text-xl">&times;</button>
+      </div>
+      <form id="form-expediente" onsubmit="guardarExpediente(event)" class="space-y-4">
+        <input type="hidden" id="exp-id" />
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-zinc-700 mb-1">Núm. Expediente *</label>
+            <input id="exp-numero" required type="text" placeholder="Ej. 00452/2026" class="w-full px-3 py-2 text-sm border border-zinc-300 rounded-lg" />
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-zinc-700 mb-1">Distrito Judicial *</label>
+            <select id="exp-distrito" required class="w-full px-3 py-2 text-sm border border-zinc-300 rounded-lg bg-white">
+              <option value="Torreón">Torreón</option>
+              <option value="Saltillo">Saltillo</option>
+              <option value="Monclova">Monclova</option>
+              <option value="San Pedro">San Pedro</option>
+              <option value="Sabinas">Sabinas</option>
+              <option value="Río Grande">Río Grande</option>
+              <option value="Acuña">Acuña</option>
+              <option value="Parras">Parras</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-zinc-700 mb-1">Juzgado / Sala *</label>
+          <input id="exp-juzgado" required type="text" placeholder="Ej. Juzgado Primero de Primera Instancia en Materia Civil" class="w-full px-3 py-2 text-sm border border-zinc-300 rounded-lg" />
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-zinc-700 mb-1">Cliente / Referencia *</label>
+            <input id="exp-cliente" required type="text" placeholder="Ej. Sucesión Martínez" class="w-full px-3 py-2 text-sm border border-zinc-300 rounded-lg" />
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-zinc-700 mb-1">WhatsApp de Alerta *</label>
+            <input id="exp-whatsapp" required type="tel" placeholder="+52 871 185 7231" class="w-full px-3 py-2 text-sm border border-zinc-300 rounded-lg" />
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-zinc-700 mb-1">Días de Término (Opcional)</label>
+          <input id="exp-termino" type="number" min="0" max="60" placeholder="Ej. 3, 5, 9 días hábiles" class="w-full px-3 py-2 text-sm border border-zinc-300 rounded-lg" />
+        </div>
+
+        <div class="flex justify-end gap-2 pt-3 border-t border-zinc-100">
+          <button type="button" onclick="cerrarModalExpediente()" class="px-4 py-2 text-xs font-semibold text-zinc-600 hover:bg-zinc-100 rounded-lg">Cancelar</button>
+          <button type="submit" class="px-5 py-2 text-xs font-semibold bg-zinc-900 text-white rounded-lg hover:bg-zinc-800">Guardar Expediente</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL CONFIGURACIÓN WHATSAPP -->
+  <div id="modal-whatsapp" class="fixed inset-0 bg-black/60 backdrop-blur-xs hidden items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-zinc-200">
+      <div class="flex justify-between items-center border-b border-zinc-100 pb-3 mb-4">
+        <h2 class="text-lg font-bold text-zinc-900 flex items-center gap-2">
+          <i class="fa-brands fa-whatsapp text-emerald-600 text-xl"></i> Alertas WhatsApp
+        </h2>
+        <button onclick="cerrarModalWhatsApp()" class="text-zinc-400 hover:text-zinc-700 text-xl">&times;</button>
+      </div>
+      <div class="space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-zinc-700 mb-1">Número Principal del Despacho</label>
+          <input id="config-wa-principal" type="tel" placeholder="+52 871 185 7231" class="w-full px-3 py-2 text-sm border border-zinc-300 rounded-lg" />
+          <p class="text-[11px] text-zinc-500 mt-1">Se asignará automáticamente a los nuevos expedientes que registres.</p>
+        </div>
+        <div class="flex items-center justify-between bg-zinc-50 p-3 rounded-lg border border-zinc-200">
+          <div>
+            <div class="text-xs font-semibold text-zinc-800">Notificaciones Automáticas</div>
+            <div class="text-[11px] text-zinc-500">Enviar aviso inmediato al detectar lista</div>
+          </div>
+          <input id="config-wa-activo" type="checkbox" checked class="w-4 h-4 accent-emerald-600" />
+        </div>
+        <div class="flex justify-end gap-2 pt-2">
+          <button onclick="cerrarModalWhatsApp()" class="px-4 py-2 text-xs font-semibold text-zinc-600 hover:bg-zinc-100 rounded-lg">Cerrar</button>
+          <button onclick="guardarConfigWhatsApp()" class="px-5 py-2 text-xs font-semibold bg-emerald-600 text-white rounded-lg hover:bg-emerald-700">Guardar Número</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const STORAGE_KEY = 'leal_pjecz_expedientes_v1';
+    const CONFIG_KEY = 'leal_pjecz_config_v1';
+
+    let config = JSON.parse(localStorage.getItem(CONFIG_KEY)) || {
+      whatsappPrincipal: '+52 871 185 7231',
+      activo: true
+    };
+
+    let expedientes = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [
+      {
+        id: '1',
+        numero: '00452/2026',
+        distrito: 'Torreón',
+        juzgado: 'Juzgado Primero de Primera Instancia en Materia Civil',
+        cliente: 'Inmobiliaria del Norte S.A.',
+        whatsapp: '+52 871 185 7231',
+        estado: 'nuevo_acuerdo',
+        ultimoAcuerdo: 'SE TIENE POR PRESENTADO ESCRITO DE CONTESTACIÓN Y SE DA VISTA A LA PARTE ACTORA POR EL TÉRMINO DE TRES DÍAS.',
+        fechaAcuerdo: 'Hoy',
+        terminoDias: 3
+      },
+      {
+        id: '2',
+        numero: '00118/2026',
+        distrito: 'Matamoros / Torreón',
+        juzgado: 'Juzgado Segundo Familiar de Primera Instancia',
+        cliente: 'Juicio Sucesorio Intestamentario',
+        whatsapp: '+52 871 185 7231',
+        estado: 'vigilando',
+        ultimoAcuerdo: 'Sin acuerdos publicados en la lista del día de hoy.',
+        fechaAcuerdo: 'En seguimiento',
+        terminoDias: 0
+      }
+    ];
+
+    function persistir() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(expedientes));
+      localStorage.setItem(CONFIG_KEY, JSON.stringify(config));
+    }
+
+    function actualizarHeaderYStats() {
+      document.getElementById('header-wa-display').textContent = config.whatsappPrincipal;
+      document.getElementById('stat-total').textContent = expedientes.length;
+      document.getElementById('stat-nuevos').textContent = expedientes.filter(e => e.estado === 'nuevo_acuerdo').length;
+      document.getElementById('stat-terminos').textContent = expedientes.filter(e => e.terminoDias > 0).length;
+      const waStatus = document.getElementById('stat-wa-status');
+      waStatus.innerHTML = config.activo
+        ? '<span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Activas'
+        : '<span class="w-2 h-2 rounded-full bg-zinc-400"></span> Pausadas';
+      waStatus.className = config.activo
+        ? 'text-sm font-bold text-emerald-600 mt-2 flex items-center gap-1.5'
+        : 'text-sm font-bold text-zinc-500 mt-2 flex items-center gap-1.5';
+    }
+
+    function renderizarExpedientes() {
+      actualizarHeaderYStats();
+      const q = document.getElementById('filtro-busqueda').value.toLowerCase();
+      const dist = document.getElementById('filtro-distrito').value;
+      const contenedor = document.getElementById('lista-expedientes');
+
+      const filtrados = expedientes.filter(e => {
+        const coincideTexto = e.numero.toLowerCase().includes(q) ||
+                              e.cliente.toLowerCase().includes(q) ||
+                              e.juzgado.toLowerCase().includes(q);
+        const coincideDist = !dist || e.distrito.includes(dist);
+        return coincideTexto && coincideDist;
+      });
+
+      if (filtrados.length === 0) {
+        contenedor.innerHTML = `
+          <div class="col-span-full bg-white rounded-xl border border-dashed border-zinc-300 p-10 text-center">
+            <p class="text-sm text-zinc-500">No hay expedientes registrados con esos criterios.</p>
+          </div>`;
+        return;
+      }
+
+      contenedor.innerHTML = filtrados.map(e => {
+        const esNuevo = e.estado === 'nuevo_acuerdo';
+        return `
+        <div class="bg-white rounded-xl border ${esNuevo ? 'border-emerald-400 ring-1 ring-emerald-400/30' : 'border-zinc-200'} p-5 shadow-sm flex flex-col justify-between gap-4">
+          <div>
+            <div class="flex items-start justify-between gap-2">
+              <div>
+                <span class="inline-block text-[11px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full ${esNuevo ? 'bg-emerald-100 text-emerald-800' : 'bg-zinc-100 text-zinc-700'}">
+                  ${esNuevo ? '● Nuevo Acuerdo' : 'En Vigilancia'}
+                </span>
+                <h3 class="text-lg font-bold text-zinc-900 mt-1.5">Exp. ${e.numero}</h3>
+              </div>
+              <div class="flex gap-1.5">
+                <button onclick="editarExpediente('${e.id}')" title="Editar" class="p-2 text-zinc-400 hover:text-zinc-800 rounded-lg hover:bg-zinc-100">
+                  <i class="fa-solid fa-pen text-xs"></i>
+                </button>
+                <button onclick="eliminarExpediente('${e.id}')" title="Eliminar" class="p-2 text-zinc-400 hover:text-red-600 rounded-lg hover:bg-red-50">
+                  <i class="fa-solid fa-trash text-xs"></i>
+                </button>
+              </div>
+            </div>
+
+            <p class="text-xs font-semibold text-[#b48a3e] mt-1">${e.distrito} • ${e.juzgado}</p>
+            <p class="text-xs text-zinc-600 mt-1"><span class="font-semibold">Asunto:</span> ${e.cliente}</p>
+
+            <div class="mt-3 p-3 rounded-lg bg-zinc-50 border border-zinc-200/80">
+              <div class="flex justify-between text-[11px] text-zinc-500 mb-1">
+                <span>Último movimiento (${e.fechaAcuerdo})</span>
+                ${e.terminoDias > 0 ? `<span class="font-bold text-amber-700">Término: ${e.terminoDias} días</span>` : ''}
+              </div>
+              <p class="text-xs text-zinc-800 leading-relaxed">${e.ultimoAcuerdo}</p>
+            </div>
+          </div>
+
+          <div class="flex flex-wrap items-center justify-between gap-2 pt-3 border-t border-zinc-100">
+            <span class="text-[11px] text-zinc-500 flex items-center gap-1">
+              <i class="fa-brands fa-whatsapp text-emerald-600"></i> ${e.whatsapp}
+            </span>
+            <div class="flex gap-2">
+              <button onclick="simularAcuerdo('${e.id}')" class="px-2.5 py-1.5 text-[11px] font-semibold bg-zinc-100 hover:bg-zinc-200 text-zinc-800 rounded-lg transition">
+                Simular Acuerdo
+              </button>
+              <button onclick="enviarWhatsAppDirecto('${e.id}')" class="px-3 py-1.5 text-[11px] font-semibold bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg flex items-center gap-1.5 transition">
+                <i class="fa-brands fa-whatsapp"></i> Enviar Alerta
+              </button>
+            </div>
+          </div>
+        </div>`;
+      }).join('');
+    }
+
+    function abrirModalExpediente() {
+      document.getElementById('exp-id').value = '';
+      document.getElementById('form-expediente').reset();
+      document.getElementById('exp-whatsapp').value = config.whatsappPrincipal;
+      document.getElementById('modal-exp-titulo').textContent = 'Registrar Expediente PJECZ';
+      document.getElementById('modal-expediente').classList.remove('hidden');
+      document.getElementById('modal-expediente').classList.add('flex');
+    }
+
+    function cerrarModalExpediente() {
+      document.getElementById('modal-expediente').classList.add('hidden');
+      document.getElementById('modal-expediente').classList.remove('flex');
+    }
+
+    function guardarExpediente(ev) {
+      ev.preventDefault();
+      const id = document.getElementById('exp-id').value;
+      const nuevoObj = {
+        id: id || Date.now().toString(),
+        numero: document.getElementById('exp-numero').value.trim(),
+        distrito: document.getElementById('exp-distrito').value,
+        juzgado: document.getElementById('exp-juzgado').value.trim(),
+        cliente: document.getElementById('exp-cliente').value.trim(),
+        whatsapp: document.getElementById('exp-whatsapp').value.trim(),
+        terminoDias: parseInt(document.getElementById('exp-termino').value || '0', 10),
+        estado: 'vigilando',
+        ultimoAcuerdo: 'Expediente dado de alta. En espera de próxima publicación del PJECZ.',
+        fechaAcuerdo: 'Hoy'
+      };
+
+      if (id) {
+        const idx = expedientes.findIndex(x => x.id === id);
+        if (idx !== -1) {
+          nuevoObj.estado = expedientes[idx].estado;
+          nuevoObj.ultimoAcuerdo = expedientes[idx].ultimoAcuerdo;
+          nuevoObj.fechaAcuerdo = expedientes[idx].fechaAcuerdo;
+          expedientes[idx] = nuevoObj;
+        }
+      } else {
+        expedientes.unshift(nuevoObj);
+      }
+
+      persistir();
+      cerrarModalExpediente();
+      renderizarExpedientes();
+    }
+
+    function editarExpediente(id) {
+      const exp = expedientes.find(x => x.id === id);
+      if (!exp) return;
+      document.getElementById('exp-id').value = exp.id;
+      document.getElementById('exp-numero').value = exp.numero;
+      document.getElementById('exp-distrito').value = exp.distrito;
+      document.getElementById('exp-juzgado').value = exp.juzgado;
+      document.getElementById('exp-cliente').value = exp.cliente;
+      document.getElementById('exp-whatsapp').value = exp.whatsapp;
+      document.getElementById('exp-termino').value = exp.terminoDias || '';
+      document.getElementById('modal-exp-titulo').textContent = 'Editar Expediente';
+      document.getElementById('modal-expediente').classList.remove('hidden');
+      document.getElementById('modal-expediente').classList.add('flex');
+    }
+
+    function eliminarExpediente(id) {
+      if (!confirm('¿Eliminar este expediente de la vigilancia?')) return;
+      expedientes = expedientes.filter(x => x.id !== id);
+      persistir();
+      renderizarExpedientes();
+    }
+
+    function simularAcuerdo(id) {
+      const exp = expedientes.find(x => x.id === id);
+      if (!exp) return;
+      exp.estado = 'nuevo_acuerdo';
+      exp.fechaAcuerdo = new Date().toLocaleDateString('es-MX');
+      exp.ultimoAcuerdo = 'ACUERDO PUBLICADO EN LISTA: SE ADMITE PROMOCIÓN Y SE ORDENA NOTIFICAR PERSONALMENTE A LAS PARTES. TÉRMINO DE 3 DÍAS HÁBILES.';
+      if (!exp.terminoDias) exp.terminoDias = 3;
+      persistir();
+      renderizarExpedientes();
+    }
+
+    function enviarWhatsAppDirecto(id) {
+      const exp = expedientes.find(x => x.id === id);
+      if (!exp) return;
+      const tel = exp.whatsapp.replace(/\D/g, '');
+      const texto = encodeURIComponent(
+        `⚖️ *ALERTA JUDICIAL PJECZ*\n` +
+        `*Despacho Jurídico Leal & Asociados*\n\n` +
+        `📁 *Expediente:* ${exp.numero}\n` +
+        `🏛️ *Distrito:* ${exp.distrito}\n` +
+        `⚖️ *Juzgado:* ${exp.juzgado}\n` +
+        `👤 *Asunto:* ${exp.cliente}\n` +
+        `📝 *Acuerdo:* ${exp.ultimoAcuerdo}\n` +
+        (exp.terminoDias > 0 ? `⏳ *Término:* ${exp.terminoDias} días hábiles` : '')
+      );
+      window.open(`https://wa.me/${tel}?text=${texto}`, '_blank');
+    }
+
+    function abrirModalWhatsApp() {
+      document.getElementById('config-wa-principal').value = config.whatsappPrincipal;
+      document.getElementById('config-wa-activo').checked = config.activo;
+      document.getElementById('modal-whatsapp').classList.remove('hidden');
+      document.getElementById('modal-whatsapp').classList.add('flex');
+    }
+
+    function cerrarModalWhatsApp() {
+      document.getElementById('modal-whatsapp').classList.add('hidden');
+      document.getElementById('modal-whatsapp').classList.remove('flex');
+    }
+
+    function guardarConfigWhatsApp() {
+      config.whatsappPrincipal = document.getElementById('config-wa-principal').value.trim() || '+52 871 185 7231';
+      config.activo = document.getElementById('config-wa-activo').checked;
+      persistir();
+      cerrarModalWhatsApp();
+      renderizarExpedientes();
+    }
+
+    renderizarExpedientes();
+  </script>
+</body>
+</html>
