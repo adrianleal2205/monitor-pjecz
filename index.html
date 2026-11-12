@@ -20,9 +20,6 @@
     .font-serif-legal {
       font-family: 'Cinzel', Georgia, serif;
     }
-    .gold-accent {
-      color: #b48a3e;
-    }
     .bg-gold {
       background-color: #b48a3e;
     }
@@ -37,7 +34,6 @@
   <header class="bg-zinc-950 text-white border-b-2 border-[#b48a3e] sticky top-0 z-30 shadow-lg">
     <div class="max-w-6xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-3">
       <div class="flex items-center gap-3">
-        <!-- Logotipo SVG estilizado fiel al despacho -->
         <div class="bg-white rounded-lg px-3 py-1.5 flex items-center gap-2.5 shadow-sm">
           <svg class="w-7 h-7 text-zinc-900" viewBox="0 0 64 64" fill="currentColor">
             <rect x="12" y="10" width="40" height="4" />
@@ -103,7 +99,7 @@
     <section class="bg-white p-4 rounded-xl border border-zinc-200 shadow-sm flex flex-col sm:flex-row gap-3">
       <div class="relative flex-1">
         <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3 text-zinc-400 text-sm"></i>
-        <input id="filtro-busqueda" oninput="renderizarExpedientes()" type="text" placeholder="Buscar por expediente, cliente o asunto..." class="w-full pl-9 pr-3 py-2 text-sm border border-zinc-300 rounded-lg focus:outline-none focus:border-zinc-900" />
+        <input id="filtro-busqueda" oninput="renderizarExpedientes()" type="text" placeholder="Buscar por expediente, cliente o juzgado..." class="w-full pl-9 pr-3 py-2 text-sm border border-zinc-300 rounded-lg focus:outline-none focus:border-zinc-900" />
       </div>
       <select id="filtro-distrito" onchange="renderizarExpedientes()" class="px-3 py-2 text-sm border border-zinc-300 rounded-lg bg-white focus:outline-none focus:border-zinc-900">
         <option value="">Todos los Distritos</option>
@@ -115,6 +111,15 @@
         <option value="Río Grande">Distrito Río Grande</option>
         <option value="Acuña">Distrito Acuña</option>
         <option value="Parras">Distrito Parras</option>
+      </select>
+      <select id="filtro-materia" onchange="renderizarExpedientes()" class="px-3 py-2 text-sm border border-zinc-300 rounded-lg bg-white focus:outline-none focus:border-zinc-900">
+        <option value="">Todas las Materias</option>
+        <option value="Civil">Civil</option>
+        <option value="Familiar">Familiar</option>
+        <option value="Mercantil">Mercantil</option>
+        <option value="Penal">Penal</option>
+        <option value="Laboral">Laboral</option>
+        <option value="Segunda Instancia">Segunda Instancia / Salas</option>
       </select>
       <a href="https://www.pjecz.gob.mx/consultas/listas-de-acuerdos/#gsc.tab=0" target="_blank" class="flex items-center justify-center gap-2 px-4 py-2 text-xs font-semibold bg-zinc-900 text-white rounded-lg hover:bg-zinc-800 transition">
         <i class="fa-solid fa-arrow-up-right-from-square"></i> Portal PJECZ
@@ -135,14 +140,15 @@
       </div>
       <form id="form-expediente" onsubmit="guardarExpediente(event)" class="space-y-4">
         <input type="hidden" id="exp-id" />
+        
         <div class="grid grid-cols-2 gap-3">
           <div>
             <label class="block text-xs font-semibold text-zinc-700 mb-1">Núm. Expediente *</label>
             <input id="exp-numero" required type="text" placeholder="Ej. 00452/2026" class="w-full px-3 py-2 text-sm border border-zinc-300 rounded-lg" />
           </div>
           <div>
-            <label class="block text-xs font-semibold text-zinc-700 mb-1">Distrito Judicial *</label>
-            <select id="exp-distrito" required class="w-full px-3 py-2 text-sm border border-zinc-300 rounded-lg bg-white">
+            <label class="block text-xs font-semibold text-zinc-700 mb-1">1. Distrito Judicial *</label>
+            <select id="exp-distrito" onchange="actualizarOpcionesJuzgados()" required class="w-full px-3 py-2 text-sm border border-zinc-300 rounded-lg bg-white">
               <option value="Torreón">Torreón</option>
               <option value="Saltillo">Saltillo</option>
               <option value="Monclova">Monclova</option>
@@ -156,13 +162,28 @@
         </div>
 
         <div>
-          <label class="block text-xs font-semibold text-zinc-700 mb-1">Juzgado / Sala *</label>
-          <input id="exp-juzgado" required type="text" placeholder="Ej. Juzgado Primero de Primera Instancia en Materia Civil" class="w-full px-3 py-2 text-sm border border-zinc-300 rounded-lg" />
+          <label class="block text-xs font-semibold text-zinc-700 mb-1">2. Materia *</label>
+          <select id="exp-materia" onchange="actualizarOpcionesJuzgados()" required class="w-full px-3 py-2 text-sm border border-zinc-300 rounded-lg bg-white">
+            <option value="Civil">Civil</option>
+            <option value="Familiar">Familiar</option>
+            <option value="Mercantil">Mercantil</option>
+            <option value="Penal">Penal / Sistema Acusatorio</option>
+            <option value="Laboral">Laboral</option>
+            <option value="Segunda Instancia">Segunda Instancia / Salas Colegiadas</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-zinc-700 mb-1">3. Juzgado / Órgano Jurisdiccional *</label>
+          <select id="exp-juzgado-select" onchange="verificarJuzgadoManual()" required class="w-full px-3 py-2 text-sm border border-zinc-300 rounded-lg bg-white">
+            <!-- Se llena dinámicamente según Distrito y Materia -->
+          </select>
+          <input id="exp-juzgado-manual" type="text" placeholder="Escribe el nombre exacto del juzgado..." class="hidden w-full mt-2 px-3 py-2 text-sm border border-amber-400 bg-amber-50/40 rounded-lg" />
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
-            <label class="block text-xs font-semibold text-zinc-700 mb-1">Cliente / Referencia *</label>
+            <label class="block text-xs font-semibold text-zinc-700 mb-1">Cliente / Asunto *</label>
             <input id="exp-cliente" required type="text" placeholder="Ej. Sucesión Martínez" class="w-full px-3 py-2 text-sm border border-zinc-300 rounded-lg" />
           </div>
           <div>
@@ -215,8 +236,227 @@
   </div>
 
   <script>
-    const STORAGE_KEY = 'leal_pjecz_expedientes_v1';
+    const STORAGE_KEY = 'leal_pjecz_expedientes_v2';
     const CONFIG_KEY = 'leal_pjecz_config_v1';
+
+    // CATÁLOGO OFICIAL DE JUZGADOS POR DISTRITO Y MATERIA EN COAHUILA (PJECZ)
+    const CATALOGO_JUZGADOS = {
+      "Torreón": {
+        "Civil": [
+          "Juzgado Primero de Primera Instancia en Materia Civil",
+          "Juzgado Segundo de Primera Instancia en Materia Civil",
+          "Juzgado Tercero de Primera Instancia en Materia Civil",
+          "Juzgado Cuarto de Primera Instancia en Materia Civil",
+          "Juzgado Quinto de Primera Instancia en Materia Civil",
+          "Juzgado Primero Letrado en Materia Civil",
+          "Juzgado Segundo Letrado en Materia Civil",
+          "Juzgado Tercero Letrado en Materia Civil"
+        ],
+        "Familiar": [
+          "Juzgado Primero de Primera Instancia en Materia Familiar",
+          "Juzgado Segundo de Primera Instancia en Materia Familiar",
+          "Juzgado Tercero de Primera Instancia en Materia Familiar",
+          "Juzgado Cuarto de Primera Instancia en Materia Familiar",
+          "Juzgado Quinto de Primera Instancia en Materia Familiar",
+          "Juzgado Especializado en Violencia Familiar contra las Mujeres (Torreón)"
+        ],
+        "Mercantil": [
+          "Juzgado Primero de Primera Instancia en Materia Mercantil",
+          "Juzgado Segundo de Primera Instancia en Materia Mercantil",
+          "Juzgado Tercero de Primera Instancia en Materia Mercantil",
+          "Juzgado Cuarto de Primera Instancia en Materia Mercantil",
+          "Juzgado Primero Oral Mercantil (Torreón)",
+          "Juzgado Segundo Oral Mercantil (Torreón)"
+        ],
+        "Penal": [
+          "Juzgado de Primera Instancia en Materia Penal del Sistema Acusatorio y Oral (Torreón)",
+          "Juzgado Especializado en Ejecución de Sanciones Penales (Torreón)",
+          "Juzgado Especializado en Justicia para Adolescentes (Torreón)"
+        ],
+        "Laboral": [
+          "Tribunal Laboral del Distrito Judicial de Torreón (Juez 1)",
+          "Tribunal Laboral del Distrito Judicial de Torreón (Juez 2)",
+          "Tribunal Laboral del Distrito Judicial de Torreón (Juez 3)"
+        ],
+        "Segunda Instancia": [
+          "Sala Colegiada Civil y Familiar del Tribunal Superior de Justicia (Torreón)",
+          "Sala Regional Penal del Tribunal Superior de Justicia (Torreón)"
+        ]
+      },
+      "San Pedro": {
+        "Civil": [
+          "Juzgado Mixto de Primera Instancia (San Pedro de las Colonias)",
+          "Juzgado Mixto de Primera Instancia (Francisco I. Madero)",
+          "Juzgado Mixto de Primera Instancia (Matamoros, Coahuila)"
+        ],
+        "Familiar": [
+          "Juzgado de Primera Instancia en Materia Familiar (San Pedro)",
+          "Juzgado Mixto de Primera Instancia (Matamoros, Coahuila)",
+          "Juzgado Mixto de Primera Instancia (Francisco I. Madero)"
+        ],
+        "Mercantil": [
+          "Juzgado Mixto de Primera Instancia (San Pedro)",
+          "Juzgado Mixto de Primera Instancia (Matamoros, Coahuila)"
+        ],
+        "Penal": [
+          "Juzgado Penal del Sistema Acusatorio y Oral (San Pedro)"
+        ],
+        "Laboral": [
+          "Tribunal Laboral (Competencia Región Laguna)"
+        ],
+        "Segunda Instancia": [
+          "Sala Colegiada Civil y Familiar (Torreón - Apelaciones Región Laguna)"
+        ]
+      },
+      "Saltillo": {
+        "Civil": [
+          "Juzgado Primero de Primera Instancia en Materia Civil (Saltillo)",
+          "Juzgado Segundo de Primera Instancia en Materia Civil (Saltillo)",
+          "Juzgado Tercero de Primera Instancia en Materia Civil (Saltillo)",
+          "Juzgado Cuarto de Primera Instancia en Materia Civil (Saltillo)",
+          "Juzgado Primero Letrado en Materia Civil (Saltillo)",
+          "Juzgado Segundo Letrado en Materia Civil (Saltillo)"
+        ],
+        "Familiar": [
+          "Juzgado Primero de Primera Instancia en Materia Familiar (Saltillo)",
+          "Juzgado Segundo de Primera Instancia en Materia Familiar (Saltillo)",
+          "Juzgado Tercero de Primera Instancia en Materia Familiar (Saltillo)",
+          "Juzgado Cuarto de Primera Instancia en Materia Familiar (Saltillo)",
+          "Juzgado Quinto de Primera Instancia en Materia Familiar (Saltillo)",
+          "Juzgado Especializado en Violencia Familiar contra las Mujeres (Saltillo)"
+        ],
+        "Mercantil": [
+          "Juzgado Primero de Primera Instancia en Materia Mercantil (Saltillo)",
+          "Juzgado Segundo de Primera Instancia en Materia Mercantil (Saltillo)",
+          "Juzgado Tercero de Primera Instancia en Materia Mercantil (Saltillo)",
+          "Juzgado Oral Mercantil (Saltillo)"
+        ],
+        "Penal": [
+          "Juzgado de Primera Instancia en Materia Penal del Sistema Acusatorio y Oral (Saltillo)",
+          "Juzgado Especializado en Ejecución de Sanciones Penales (Saltillo)"
+        ],
+        "Laboral": [
+          "Tribunal Laboral del Distrito Judicial de Saltillo"
+        ],
+        "Segunda Instancia": [
+          "Pleno del Tribunal Superior de Justicia del Estado",
+          "Sala Colegiada Civil y Familiar (Saltillo)",
+          "Sala Colegiada Penal (Saltillo)"
+        ]
+      },
+      "Monclova": {
+        "Civil": [
+          "Juzgado Primero de Primera Instancia en Materia Civil (Monclova)",
+          "Juzgado Segundo de Primera Instancia en Materia Civil (Monclova)",
+          "Juzgado Tercero de Primera Instancia en Materia Civil (Monclova)",
+          "Juzgado Letrado en Materia Civil (Monclova)"
+        ],
+        "Familiar": [
+          "Juzgado Primero de Primera Instancia en Materia Familiar (Monclova)",
+          "Juzgado Segundo de Primera Instancia en Materia Familiar (Monclova)",
+          "Juzgado Tercero de Primera Instancia en Materia Familiar (Monclova)",
+          "Juzgado Especializado en Violencia Familiar (Monclova)"
+        ],
+        "Mercantil": [
+          "Juzgado Primero de Primera Instancia en Materia Mercantil (Monclova)",
+          "Juzgado Segundo de Primera Instancia en Materia Mercantil (Monclova)"
+        ],
+        "Penal": [
+          "Juzgado Penal del Sistema Acusatorio y Oral (Monclova)"
+        ],
+        "Laboral": [
+          "Tribunal Laboral del Distrito Judicial de Monclova"
+        ],
+        "Segunda Instancia": [
+          "Sala Colegiada Civil y Familiar (Saltillo)"
+        ]
+      },
+      "Sabinas": {
+        "Civil": [
+          "Juzgado de Primera Instancia en Materia Civil (Sabinas)",
+          "Juzgado Mixto de Primera Instancia (Múzquiz)"
+        ],
+        "Familiar": [
+          "Juzgado de Primera Instancia en Materia Familiar (Sabinas)",
+          "Juzgado Mixto de Primera Instancia (Múzquiz)"
+        ],
+        "Mercantil": [
+          "Juzgado de Primera Instancia en Materia Civil y Mercantil (Sabinas)"
+        ],
+        "Penal": [
+          "Juzgado Penal del Sistema Acusatorio y Oral (Sabinas)"
+        ],
+        "Laboral": [
+          "Tribunal Laboral de la Región Carbonífera (Sabinas)"
+        ],
+        "Segunda Instancia": [
+          "Sala Colegiada Civil y Familiar (Saltillo)"
+        ]
+      },
+      "Río Grande": {
+        "Civil": [
+          "Juzgado Primero de Primera Instancia en Materia Civil (Piedras Negras)",
+          "Juzgado Segundo de Primera Instancia en Materia Civil (Piedras Negras)"
+        ],
+        "Familiar": [
+          "Juzgado Primero de Primera Instancia en Materia Familiar (Piedras Negras)",
+          "Juzgado Segundo de Primera Instancia en Materia Familiar (Piedras Negras)"
+        ],
+        "Mercantil": [
+          "Juzgado de Primera Instancia en Materia Mercantil (Piedras Negras)"
+        ],
+        "Penal": [
+          "Juzgado Penal del Sistema Acusatorio y Oral (Piedras Negras)"
+        ],
+        "Laboral": [
+          "Tribunal Laboral del Distrito Judicial de Río Grande (Piedras Negras)"
+        ],
+        "Segunda Instancia": [
+          "Sala Colegiada Civil y Familiar (Saltillo)"
+        ]
+      },
+      "Acuña": {
+        "Civil": [
+          "Juzgado de Primera Instancia en Materia Civil (Ciudad Acuña)"
+        ],
+        "Familiar": [
+          "Juzgado Primero de Primera Instancia en Materia Familiar (Ciudad Acuña)",
+          "Juzgado Segundo de Primera Instancia en Materia Familiar (Ciudad Acuña)"
+        ],
+        "Mercantil": [
+          "Juzgado de Primera Instancia en Materia Civil y Mercantil (Ciudad Acuña)"
+        ],
+        "Penal": [
+          "Juzgado Penal del Sistema Acusatorio y Oral (Ciudad Acuña)"
+        ],
+        "Laboral": [
+          "Tribunal Laboral del Distrito Judicial de Acuña"
+        ],
+        "Segunda Instancia": [
+          "Sala Colegiada Civil y Familiar (Saltillo)"
+        ]
+      },
+      "Parras": {
+        "Civil": [
+          "Juzgado Mixto de Primera Instancia (Parras de la Fuente)"
+        ],
+        "Familiar": [
+          "Juzgado Mixto de Primera Instancia (Parras de la Fuente)"
+        ],
+        "Mercantil": [
+          "Juzgado Mixto de Primera Instancia (Parras de la Fuente)"
+        ],
+        "Penal": [
+          "Juzgado Penal del Sistema Acusatorio y Oral (Parras)"
+        ],
+        "Laboral": [
+          "Tribunal Laboral (Saltillo)"
+        ],
+        "Segunda Instancia": [
+          "Sala Colegiada Civil y Familiar (Saltillo)"
+        ]
+      }
+    };
 
     let config = JSON.parse(localStorage.getItem(CONFIG_KEY)) || {
       whatsappPrincipal: '+52 871 185 7231',
@@ -228,6 +468,7 @@
         id: '1',
         numero: '00452/2026',
         distrito: 'Torreón',
+        materia: 'Civil',
         juzgado: 'Juzgado Primero de Primera Instancia en Materia Civil',
         cliente: 'Inmobiliaria del Norte S.A.',
         whatsapp: '+52 871 185 7231',
@@ -239,8 +480,9 @@
       {
         id: '2',
         numero: '00118/2026',
-        distrito: 'Matamoros / Torreón',
-        juzgado: 'Juzgado Segundo Familiar de Primera Instancia',
+        distrito: 'San Pedro',
+        materia: 'Familiar',
+        juzgado: 'Juzgado Mixto de Primera Instancia (Matamoros, Coahuila)',
         cliente: 'Juicio Sucesorio Intestamentario',
         whatsapp: '+52 871 185 7231',
         estado: 'vigilando',
@@ -249,6 +491,45 @@
         terminoDias: 0
       }
     ];
+
+    function actualizarOpcionesJuzgados(valorSeleccionado = '') {
+      const distrito = document.getElementById('exp-distrito').value;
+      const materia = document.getElementById('exp-materia').value;
+      const select = document.getElementById('exp-juzgado-select');
+      const manualInput = document.getElementById('exp-juzgado-manual');
+
+      const lista = (CATALOGO_JUZGADOS[distrito] && CATALOGO_JUZGADOS[distrito][materia]) || [];
+      
+      select.innerHTML = lista.map(j => `<option value="${j}">${j}</option>`).join('') +
+        `<option value="__MANUAL__">➕ Otro juzgado (escribir manualmente)...</option>`;
+
+      if (valorSeleccionado) {
+        if (lista.includes(valorSeleccionado)) {
+          select.value = valorSeleccionado;
+          manualInput.classList.add('hidden');
+        } else {
+          select.value = '__MANUAL__';
+          manualInput.value = valorSeleccionado;
+          manualInput.classList.remove('hidden');
+        }
+      } else {
+        manualInput.classList.add('hidden');
+        manualInput.value = '';
+      }
+    }
+
+    function verificarJuzgadoManual() {
+      const select = document.getElementById('exp-juzgado-select');
+      const manualInput = document.getElementById('exp-juzgado-manual');
+      if (select.value === '__MANUAL__') {
+        manualInput.classList.remove('hidden');
+        manualInput.required = true;
+        manualInput.focus();
+      } else {
+        manualInput.classList.add('hidden');
+        manualInput.required = false;
+      }
+    }
 
     function persistir() {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(expedientes));
@@ -273,14 +554,16 @@
       actualizarHeaderYStats();
       const q = document.getElementById('filtro-busqueda').value.toLowerCase();
       const dist = document.getElementById('filtro-distrito').value;
+      const mat = document.getElementById('filtro-materia').value;
       const contenedor = document.getElementById('lista-expedientes');
 
       const filtrados = expedientes.filter(e => {
         const coincideTexto = e.numero.toLowerCase().includes(q) ||
                               e.cliente.toLowerCase().includes(q) ||
                               e.juzgado.toLowerCase().includes(q);
-        const coincideDist = !dist || e.distrito.includes(dist);
-        return coincideTexto && coincideDist;
+        const coincideDist = !dist || e.distrito === dist;
+        const coincideMat = !mat || e.materia === mat;
+        return coincideTexto && coincideDist && coincideMat;
       });
 
       if (filtrados.length === 0) {
@@ -298,9 +581,14 @@
           <div>
             <div class="flex items-start justify-between gap-2">
               <div>
-                <span class="inline-block text-[11px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full ${esNuevo ? 'bg-emerald-100 text-emerald-800' : 'bg-zinc-100 text-zinc-700'}">
-                  ${esNuevo ? '● Nuevo Acuerdo' : 'En Vigilancia'}
-                </span>
+                <div class="flex flex-wrap items-center gap-1.5">
+                  <span class="inline-block text-[11px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full ${esNuevo ? 'bg-emerald-100 text-emerald-800' : 'bg-zinc-100 text-zinc-700'}">
+                    ${esNuevo ? '● Nuevo Acuerdo' : 'En Vigilancia'}
+                  </span>
+                  <span class="inline-block text-[11px] font-semibold px-2 py-0.5 rounded-full bg-amber-50 text-amber-800 border border-amber-200">
+                    ${e.materia || 'Civil'}
+                  </span>
+                </div>
                 <h3 class="text-lg font-bold text-zinc-900 mt-1.5">Exp. ${e.numero}</h3>
               </div>
               <div class="flex gap-1.5">
@@ -346,6 +634,7 @@
       document.getElementById('exp-id').value = '';
       document.getElementById('form-expediente').reset();
       document.getElementById('exp-whatsapp').value = config.whatsappPrincipal;
+      actualizarOpcionesJuzgados();
       document.getElementById('modal-exp-titulo').textContent = 'Registrar Expediente PJECZ';
       document.getElementById('modal-expediente').classList.remove('hidden');
       document.getElementById('modal-expediente').classList.add('flex');
@@ -359,11 +648,17 @@
     function guardarExpediente(ev) {
       ev.preventDefault();
       const id = document.getElementById('exp-id').value;
+      const selectJuzgado = document.getElementById('exp-juzgado-select').value;
+      const juzgadoFinal = selectJuzgado === '__MANUAL__'
+        ? document.getElementById('exp-juzgado-manual').value.trim()
+        : selectJuzgado;
+
       const nuevoObj = {
         id: id || Date.now().toString(),
         numero: document.getElementById('exp-numero').value.trim(),
         distrito: document.getElementById('exp-distrito').value,
-        juzgado: document.getElementById('exp-juzgado').value.trim(),
+        materia: document.getElementById('exp-materia').value,
+        juzgado: juzgadoFinal,
         cliente: document.getElementById('exp-cliente').value.trim(),
         whatsapp: document.getElementById('exp-whatsapp').value.trim(),
         terminoDias: parseInt(document.getElementById('exp-termino').value || '0', 10),
@@ -395,7 +690,8 @@
       document.getElementById('exp-id').value = exp.id;
       document.getElementById('exp-numero').value = exp.numero;
       document.getElementById('exp-distrito').value = exp.distrito;
-      document.getElementById('exp-juzgado').value = exp.juzgado;
+      document.getElementById('exp-materia').value = exp.materia || 'Civil';
+      actualizarOpcionesJuzgados(exp.juzgado);
       document.getElementById('exp-cliente').value = exp.cliente;
       document.getElementById('exp-whatsapp').value = exp.whatsapp;
       document.getElementById('exp-termino').value = exp.terminoDias || '';
@@ -430,7 +726,7 @@
         `⚖️ *ALERTA JUDICIAL PJECZ*\n` +
         `*Despacho Jurídico Leal & Asociados*\n\n` +
         `📁 *Expediente:* ${exp.numero}\n` +
-        `🏛️ *Distrito:* ${exp.distrito}\n` +
+        `🏛️ *Distrito:* ${exp.distrito} (${exp.materia || 'Civil'})\n` +
         `⚖️ *Juzgado:* ${exp.juzgado}\n` +
         `👤 *Asunto:* ${exp.cliente}\n` +
         `📝 *Acuerdo:* ${exp.ultimoAcuerdo}\n` +
